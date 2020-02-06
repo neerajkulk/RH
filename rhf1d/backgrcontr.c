@@ -12,12 +12,10 @@
 #include "rh.h"
 #include "atom.h"
 #include "atmos.h"
-#include "spectrum.h"
 #include "geometry.h"
 #include "background.h"
 #include "inputs.h"
 #include "error.h"
-#include "statistics.h"
 
 #define CONTR_INPUT_FILE "contribute.input"
 
@@ -27,15 +25,10 @@
 
 /* --- Global variables --                             -------------- */
 
-enum Topology topology = ONE_D_PLANE;
-
-Atmosphere atmos;
-Geometry geometry;
-Spectrum spectrum;
-InputData input;
-ProgramStats stats;
-CommandLine commandline;
-char messageStr[MAX_LINE_SIZE];
+// 31/07/19 epm: Global variables definition is now in "rh_glob.c".
+extern Atmosphere atmos;
+extern Geometry geometry;
+extern char messageStr[];
 
 
 /* ------- begin -------------------------- backgrcontr.c ----------- */
@@ -47,7 +40,6 @@ int main(int argc, char *argv[])
   int     Nlambda, result;
   double *lambda;
   FILE   *fp;
-
 
   /* --- Read input data and initialize --             -------------- */
 
@@ -74,4 +66,5 @@ int main(int argc, char *argv[])
 
   free(lambda);
 }
+
 /* ------- end ---------------------------- backgrcontr.c ----------- */

@@ -1,4 +1,4 @@
-PRO write1datmos, atmos, FILENAME=filename
+PRO write1datmosmod, atmos, FILENAME=filename
 
   CM_TO_M = 1.0E-2
   KM_TO_M = 1.0E+3
@@ -52,16 +52,6 @@ PRO write1datmos, atmos, FILENAME=filename
                atmos.v[k]/KM_TO_M, atmos.vturb[k]/KM_TO_M
     END
   ENDCASE
-
-  printf, unit, FORMAT='("*",/"* Hydrogen populations (LTE)")'
-
-  IF (n_elements(atmos.nH) GT 1)  THEN BEGIN 
-    printf, unit, FORMAT=$
-      '("*",4X,"nh(1)",7X,"nh(2)",7X,"nh(3)",7X,"nh(4)",7X,"nh(5)",7X,"np")'
-
-    FOR k=0, atmos.Ndep-1 DO $
-     printf, unit, FORMAT='(6E12.4)', atmos.nH[k, *]* CM_TO_M^3
-  ENDIF
 
   free_lun, unit
 END

@@ -51,14 +51,25 @@ void setOptions(int argc, char *argv[])
 
   parse(argc, argv, Noption, theOptions);
 
-  if (strlen(logfileName) > 0) {
-    if ((commandline.logfile = fopen(logfileName, "w")) == NULL) {
-      sprintf(messageStr, "Unable to open log file %s", logfileName);
-      Error(ERROR_LEVEL_2, routineName, messageStr);
+  if (strlen(logfileName) > 0)
+  {
+    // 13/06/19 epm: After converting RH executables to functions,
+    // the file remains open (there is not end of application to close it)
+    // and, therefore, we should only open it once.
+    if (commandline.logfile == NULL)
+    {
+      if ((commandline.logfile = fopen(logfileName, "w")) == NULL)
+      {
+        sprintf(messageStr, "Unable to open log file %s", logfileName);
+        Error(ERROR_LEVEL_2, routineName, messageStr);
+      }
+      setvbuf(commandline.logfile, NULL, _IOLBF, BUFSIZ);
     }
-    setvbuf(commandline.logfile, NULL, _IOLBF, BUFSIZ);
-  } else
+  }
+  else
+  {
     commandline.logfile = stderr;
+  }
 
   commandline.wavetable = (strlen(wavetable) > 0) ? wavetable : NULL;
 }

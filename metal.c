@@ -65,6 +65,9 @@ extern Atmosphere atmos;
 extern char messageStr[];
 extern InputData input;
 
+// 02/07/19 epm: Control of new RH executions.
+extern bool_t new_passive_bb;
+
 
 /* ------- begin -------------------------- Metal_bf.c -------------- */
 
@@ -180,6 +183,12 @@ flags passive_bb(double lambda, int nspect, int mu, bool_t to_obs,
 
   backgrflags.hasline     = FALSE;
   backgrflags.ispolarized = FALSE;
+
+  // 02/07/19 epm: Control of new RH executions.
+  if (new_passive_bb) {
+    initialize = TRUE;
+    new_passive_bb = FALSE;
+  }
 
   if (initialize) {
     for (l = 0;  l < N_MAX_OVERLAP;  l++) linelist[l] = NULL;

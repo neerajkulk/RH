@@ -2,11 +2,20 @@
 #
 #      Version:       rh2.0, 1-D plane-parallel
 #      Author:        Han Uitenbroek (huitenbroek@nso.edu)
-#      Last modified: Wed May 30 14:11:06 2018 --
+#      Last modified: Mon May 21 14:30:59 2018 --
+#
+#      Updates (epm): Adaptation to the DeSIRe project.
+#                     Interoperability C-Fortran.
+#                     Conversion of main() as a function for Fortran.
+#                     Addition to the "../librh.a" library of all the
+#                     objects we need.
 #
 ##     --------------------------                      ----------RH-- ##
 
+# 10/10/19 epm: CPU and OS defined with system calls.
 GEOMETRY = ONE_D_PLANE
+CPU := $(shell uname -m)
+OS  := $(shell uname -s)
 
 include ../makefiles/makefile.$(CPU).$(OS)
 
@@ -18,50 +27,84 @@ include ../makefiles/makefile.$(CPU).$(OS)
 
 ## --- Define groups of object files --                -------------- ##
 
+ONE_D_OBJS = rhf1d_main.o
 
-ONE_D_OBJS = anglequad.o  bezier_1D.o feautrier.o  formal.o  hydrostat.o \
+ONE_D_OBRC = conversion_main.o
+
+  RAY_OBJS = solveray_main.o
+
+BACKGROPAC = backgrcontr.o
+
+# 27/05/19 epm: Objects to add to the library ("../librh.a").
+ADDRH_OBJS = anglequad.o \
+             bezier_1D.o \
+             conversion.o \
+             feautrier.o \
+             formal.o \
+             hydrostat.o \
              multiatmos.o \
-             rhf1d.o  piecestokes_1D.o  piecewise_1D.o  project.o \
-             riiplane.o  writeflux_xdr.o  writegeom_xdr.o 
+             piecestokes_1D.o \
+             piecewise_1D.o \
+             project.o \
+             rh_chrono.o \
+             rh_close.o \
+             rh_desire.o \
+             rh_glob.o \
+             rhf1d.o \
+             riiplane.o \
+             solveray.o \
+             writeflux_xdr.o \
+             writegeom_xdr.o
 
-   ONEDOBJ = bezier_1D.o  solve1d.o  iter_1d.o  feautrier.o \
-              piecewise_1D.o  project.o
-
-  RAY_OBJS = anglequad.o  bezier_1D.o  feautrier.o  formal.o  hydrostat.o \
-             multiatmos.o \
-             project.o  piecestokes_1D.o  piecewise_1D.o  riiplane.o \
-             solveray.o
-
-BACKGROPAC = anglequad.o  backgrcontr.o  multiatmos.o  project.o
+# 20/06/19 epm: Directory for the executables.
+BINDIR = ../../../bin
 
 
 ## --- Rules for the executables --                    -------------- ##
 
-all:   rhf1d  solve1d  solveray  backgrcontr
+# 20/06/19 epm: DeSIRe doesn't need the executables, only the libraries.
+libraries:  librh  ../librh.a
 
-rhf1d:  $(ONE_D_OBJS)  librh
+all:  rhf1d  conversion  solveray  backgrcontr
+
+# 27/05/19 epm: 3 dependencies.
+# 1) compile the executable's sources.
+# 2) compile and update the libraries "librh.a" and "librh_f90.a".
+# 3) compile and add objects to the library "librh.a".
+
+rhf1d:  $(ONE_D_OBJS)  librh  ../librh.a
 	$(LD) -o $@  $(LDFLAGS) $(ONE_D_OBJS) $(LIBS)
+	cp -p $@ $(BINDIR)
 
-solve1d:  $(ONEDOBJ)  librh
-	$(LD) -o $@  $(LDFLAGS) $(ONEDOBJ) $(LIBS)
+conversion:  $(ONE_D_OBRC)  librh  ../librh.a
+	$(LD) -o $@  $(LDFLAGS) $(ONE_D_OBRC) $(LIBS)
+	cp -p $@ $(BINDIR)
 
-solveray:  $(RAY_OBJS)  librh
+solveray:  $(RAY_OBJS)  librh  ../librh.a
 	$(LD) -o $@  $(LDFLAGS) $(RAY_OBJS) $(LIBS)
+	cp -p $@ $(BINDIR)
 
-backgrcontr:  $(BACKGROPAC) librh
+backgrcontr:  $(BACKGROPAC)  librh  ../librh.a
 	$(LD) -o $@  $(LDFLAGS) $(BACKGROPAC) $(LIBS)
+	cp -p $@ $(BINDIR)
 
 
-## --- If no FORTRAN compiler is available remove librh_f90.a in following
+## --- If no FORTRAN compiler is available remove librh_f90.a in following.
 
 librh:
-	cd ..; $(MAKE) librh.a  librh_f90.a
+	cd ..; $(MAKE) librh.a librh_f90.a
+
+
+## --- 27/05/19 epm: Addition to the library of all the objects we need.
+
+../librh.a: $(ADDRH_OBJS)
+	ar $(ARFLAGS) $@ $?
 
 
 ## --- Clean up --                                     -------------- ##
 
 clean:
-	rm -f *.o  rhf1d  solve1d  solveray  backgrcontr
+	rm -f *.o  rhf1d  conversion  solveray  backgrcontr
 
 
 ## --- Explicit dependencies on include files --       -------------- ##
@@ -70,12 +113,16 @@ clean:
 anglequad.o:            ../rh.h  ../atom.h  ../atmos.h  \
                         geometry.h
 
-bezier_1D.o:            ../rh.h  ../atom.h  ../atmos.h       \
+bezier_1D.o:            ../rh.h  ../atom.h  ../atmos.h  \
                         geometry.h  ../spectrum.h  ../bezier.h
 
 backgrcontr.o:          ../rh.h  ../atom.h  ../atmos.h  \
-                        ../spectrum.h  geometry.h  ../background.h  \
-                        ../inputs.h  ../error.h  ../statistics.h
+                        geometry.h  ../background.h  \
+                        ../inputs.h  ../error.h
+
+conversion.o:           ../rh.h  ../atom.h  ../atmos.h  \
+                        geometry.h  ../spectrum.h  ../background.h  \
+                        ../statistics.h  ../inputs.h
 
 feautrier.o:            ../rh.h  ../atom.h  ../atmos.h  \
                         geometry.h  ../spectrum.h  ../error.h
@@ -87,10 +134,6 @@ formal.o:               ../rh.h  ../atom.h  ../atmos.h  \
 hydrostat.o:            ../rh.h  ../atom.h  ../atmos.h  geometry.h \
                         ../background.h  ../constant.h  ../accelerate.h \
                         ../error.h
-
-iter_1d.o:              ../rh.h  ../atom.h  ../atmos.h  \
-                        geometry.h  ../accelerate.h  ../inputs.h  ../error.h  \
-                        ../statistics.h
 
 multiatmos.o:           ../rh.h  ../atom.h  ../atmos.h  \
                         geometry.h  ../spectrum.h  ../background.h  \
@@ -106,16 +149,21 @@ piecewise_1D.o:         ../rh.h  ../error.h  ../atom.h  ../atmos.h  \
 project.o:              ../rh.h  ../atom.h  ../atmos.h  \
                         geometry.h
 
+rh_close.o:             ../rh.h  ../atom.h  ../atmos.h  ../spectrum.h  \
+                        ../statistics.h  ../inputs.h
+
+rh_desire.o:            ../desire.h
+
+rh_glob.o:              ../rh.h  ../atom.h  ../atmos.h  \
+                        geometry.h  ../spectrum.h  \
+                        ../statistics.h  ../inputs.h
+
 rhf1d.o:                ../rh.h  ../atom.h  ../atmos.h  \
                         geometry.h  ../spectrum.h  ../background.h  \
-                        ../statistics.h  ../error.h  ../inputs.h  ../xdr.h
+                        ../statistics.h  ../inputs.h  ../xdr.h
 
 riiplane.o:             ../rh.h  ../atom.h  ../atmos.h  \
                         geometry.h  ../constant.h  ../error.h
-
-solve1d.o:              ../rh.h  ../atom.h  ../atmos.h  \
-                        geometry.h  ../spectrum.h  ../accelerate.h  \
-                        ../constant.h  ../statistics.h  ../inputs.h
 
 solveray.o:             ../rh.h  ../atom.h  ../atmos.h  \
                         geometry.h  ../spectrum.h  ../background.h  \

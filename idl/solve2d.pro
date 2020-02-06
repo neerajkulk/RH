@@ -3,14 +3,14 @@
   Nx = 100L  &  Nz = 100L
   zmin = 0.0  &  zmax = 600  &  H = 60.0
 
-  Nlambda  = 51L
-  NmaxIter = 50L  &  iterLimit = 1.0D-4
+  Nlambda  = 15L
+  NmaxIter = 75L  &  iterLimit = 1.0D-4
   Ngdelay  =  6L  &  Ngorder   = 3L   &  Ngperiod  = 5L
 
   FIXED = 0L  &  PERIODIC = 1L
-  boundCond = PERIODIC
 
-  IRRADIATED = 0L  &  ZERO = 1L  &  THERMALIZED = 2L  &  REFLECTIVE = 3L
+  boundCond = PERIODIC
+  IRRADIATED = 0L  &  ZERO = 1L  &  PLANCK = 2L
   boundVal = [ZERO, IRRADIATED]
 
   dx = 12.2 + dblarr(Nx)
@@ -18,9 +18,8 @@
   FOR l=0, Nx-2 DO x(l+1) = x(l) + dx(l)
   z  = double(zmax + (zmin - zmax)*findgen(Nz)/float(Nz - 1))
 
-  dBp_x = 0.15  &  dBp_z = 0.05
-;;  dBp_x = 0.0  &  dBp_z = 0.0
-  
+;;  dBp_x = 0.15  &  dBp_z = 0.05
+  dBp_x = 0.0  &  dBp_z = 0.0
   eps0  = 1.0D-04
 
   rho0  = 2.0D+3
@@ -64,8 +63,7 @@
   free_lun, fpout
 
   pswindow, 0, xsize = 500, ysize = 600
-  loadct, 1, /SILENT
-  
+
   panel, scaleimg_idl(Bp, 350, 250), [x(0), x(Nx-1)], [z(Nz-1), z(0)], $
    xpos=50, ypos=325, /ORDER, ytitle='height [km]', title='B'
   panel, scaleimg_idl(S, 350, 250), $
@@ -73,6 +71,6 @@
    xpos=50, ypos=50, /ORDER, xtitle='x [km]', ytitle='height [km]', $
    title='S'
 
-  window, 2, xs=1000, ys=1200
+  window, 2, xs=400, ys=300
   shade_surf, S
 END

@@ -40,7 +40,7 @@ ndim= srr(0)
 nx= srr(1)
 i= fix(ix)  &  i= i < (nx-1)
 ip= i+ 1  &  ip= ip < (nx-1)
-dx= vector(ix- i)  &  dx1= 1.0- dx
+dx= vectorm(ix- i)  &  dx1= 1.0- dx
 ;
 IF (ndim eq 1) THEN $
   return, rr(i)*dx1+ rr(ip)*dx $
@@ -48,7 +48,7 @@ ELSE BEGIN
   ny= srr(2)
   j= fix(jy)  &  j= j < (ny-1)
   jp= j+ 1  &  jp= jp < (ny-1)
-  dy= vector(jy- j)  &  dy1= 1.0- dy
+  dy= vectorm(jy- j)  &  dy1= 1.0- dy
   return, dsup(rr,i,j)*(dx1#dy1)+ dsup(rr,i,jp)*(dx1#dy)+ $
    dsup(rr,ip,j)*(dx#dy1)+ dsup(rr,ip,jp)*(dx#dy)
 ENDELSE

@@ -87,10 +87,10 @@ void readAtom(Atom *atom, char *atom_file, bool_t active)
   if ((atom->fp_input = fopen(atom_file, "r")) == NULL) {
     sprintf(messageStr, "Unable to open input file %s", atom_file);
     Error(ERROR_LEVEL_2, routineName, atom_file);
-  } else {
+/*  } else {
     sprintf(messageStr, " -- reading input file: %s %s",
 	    atom_file, (active) ? "(active)\n\n" : "(passive)\n");
-    Error(MESSAGE, routineName, messageStr);
+    Error(MESSAGE, routineName, messageStr);*/
   }
   atom->active = active;
 
@@ -288,10 +288,10 @@ void readAtom(Atom *atom, char *atom_file, bool_t active)
     } else if (strstr(vdWstr, "BARKLEM")) {
       line->vdWaals = BARKLEM;
       if (!getBarklemactivecross(line)) {
-	sprintf(messageStr,
+/*	sprintf(messageStr,
 		"Line %3d -> %3d: cannot treat line "
 		"with Barklem type broadening. Using UNSOLD.", j, i);
-	Error(WARNING, routineName, messageStr);
+	Error(WARNING, routineName, messageStr); */
 	line->vdWaals = UNSOLD;
 	line->cvdWaals[3] = line->cvdWaals[1] = 0.0;
       }
@@ -335,10 +335,10 @@ void readAtom(Atom *atom, char *atom_file, bool_t active)
 	  }
 	  line->polarizable = TRUE;
 	} else {
-	  sprintf(messageStr,
+/*	  sprintf(messageStr,
 		  " -- Treating line %3d -> %3d without polarization%s\n",
 		  j, i, (kr == Nline-1) ? "\n" : "");
-	  Error(MESSAGE, routineName, messageStr);
+	  Error(MESSAGE, routineName, messageStr);  */
 	  line->polarizable = FALSE;
 	}
       }
@@ -736,7 +736,9 @@ void freeAtomicLine(AtomicLine *line)
   if (line->wphi != NULL)    free(line->wphi);
   if (line->Qelast != NULL)  free(line->Qelast);
   if (line->rho_prd != NULL) freeMatrix((void **) line->rho_prd);
-  if (line->fp_GII != NULL)  free(line->fp_GII);
+  // 09/09/19 epm: Change free(line->fp_GII) for fclose(line->fp_GII).
+  //if (line->fp_GII != NULL) free(line->fp_GII); ???
+  if (line->fp_GII != NULL) fclose(line->fp_GII);
 }
 /* ------- end ---------------------------- freeAtomicLine.c -------- */
 

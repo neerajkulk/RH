@@ -59,6 +59,11 @@ double bilinear(int Ncol, int Nrow, double *f, double x, double y);
 extern Atmosphere atmos;
 extern char messageStr[];
 
+// 02/07/19 epm: Control of new RH executions.
+extern bool_t new_hminus_ff;
+extern bool_t new_h2minus_ff;
+extern bool_t new_h2plus_ff;
+
 
 /* ------- begin -------------------------- distribute_nH.c --------- */
 
@@ -448,6 +453,12 @@ bool_t Hminus_ff(double lambda, double *chi)
   if (lambda >= lambdaFF[NFF-1])
     return Hminus_ff_long(lambda, chi);
 
+  // 02/07/19 epm: Control of new RH executions.
+  if (new_hminus_ff) {
+    initialize = TRUE;
+    new_hminus_ff = FALSE;
+  }
+
   if (initialize) {
 
     /* --- Store the fractional indices of temperature only the
@@ -646,6 +657,12 @@ bool_t H2minus_ff(double lambda, double *chi) {
   if (lambda >= lambdaFF[NFF_H2-1])
     return FALSE;
 
+  // 02/07/19 epm: Control of new RH executions.
+  if (new_h2minus_ff) {
+    initialize = TRUE;
+    new_h2minus_ff = FALSE;
+  }
+
   if (initialize) {
     theta_index = (double *) malloc(Nspace * sizeof(double));
     for (k = 0;  k < Nspace;  k++) {
@@ -766,6 +783,12 @@ bool_t H2plus_ff(double lambda, double *chi)
   }
   if (lambda >= lambdaFF[NFF_H2P-1])
     return FALSE;
+
+  // 02/07/19 epm: Control of new RH executions.
+  if (new_h2plus_ff) {
+    initialize = TRUE;
+    new_h2plus_ff = FALSE;
+  }
 
   if (initialize) {
     temp_index = (double *) malloc(Nspace * sizeof(double));

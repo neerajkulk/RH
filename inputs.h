@@ -55,6 +55,7 @@ typedef struct {
 typedef struct {
   char   atmos_input[MAX_VALUE_LENGTH],
          abund_input[MAX_VALUE_LENGTH],
+         barklem_dir[MAX_VALUE_LENGTH],   // 21/06/19 epm: new input
          wavetable_input[MAX_VALUE_LENGTH],
          atoms_input[MAX_VALUE_LENGTH],
          molecules_input[MAX_VALUE_LENGTH],
@@ -76,7 +77,7 @@ typedef struct {
          dampingFile[MAX_VALUE_LENGTH],
          coolingFile[MAX_VALUE_LENGTH],
          Itop[MAX_VALUE_LENGTH];
-  bool_t magneto_optical, PRD_angle_dep, XRD, Eddington,
+         bool_t magneto_optical, PRD_angle_dep, XRD, Eddington,
          backgr_pol, limit_memory, allow_passive_bb, NonICE,
          rlkscatter, xdr_endian, old_background, accelerate_mols;
   enum   solution startJ;

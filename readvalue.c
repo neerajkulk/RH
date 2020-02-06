@@ -366,7 +366,7 @@ void setInterpolate_3D(char *value, void *pointer)
 
 void set_S_Interpolation(char *value, void *pointer)
 {
-  const char routineName[] = "setInterpolate_3D";
+  const char routineName[] = "set_S_Interpolation";
 
   enum S_interpol interpolation;
 
@@ -378,7 +378,7 @@ void set_S_Interpolation(char *value, void *pointer)
     interpolation = S_BEZIER3;
   else {
     sprintf(messageStr,
-	    "\n  Invalid value for keyword S_INTERPOLATION: %s", value);
+	    "Invalid value for keyword S_INTERPOLATION: %s\n", value);
     Error(ERROR_LEVEL_2, routineName, messageStr);
   }
   memcpy(pointer, &interpolation, sizeof(enum S_interpol));

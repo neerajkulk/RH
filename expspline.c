@@ -24,8 +24,8 @@
 
 static bool_t  ascend;
 static int     Ntable;
-static double *xtable, xmin, xmax, sigma, *M = NULL,
-              *ytable, *sinhh = NULL;
+static double *xtable, xmin, xmax, sigma, *M = NULL;
+static double *ytable, *sinhh = NULL;
 
 
 /* ------- begin -------------------------- exp_splineCoef.c -------- */

@@ -19,7 +19,7 @@
               
   NmaxIter  = 200L  &  iterLimit = 1.0D-4
   Ngdelay   =  5L   &  Ngorder   = 3L      &  Ngperiod = 5L     
-       Ndep = 100L  &      Nrays = 7L      &  Nlambda  = 101L
+       Ndep = 100L  &      Nrays = 7L      &  Nlambda  = 21L
   
   heightmin  = 0.0   & heightmax = 600.0     &  scaleHeight = 60.0
         
@@ -39,7 +39,7 @@
   ;;                        but limit to 7 Doppler widths)
   ;;            lambda    - Wavelength in Doppler units
 
-  Adamp  = 1.0D-3
+  Adamp  = double(0.0)
   lambda = 15.0 * dindgen(Nlambda)/double(Nlambda-1)
   
   ;;            Bp      - Planck function
@@ -55,14 +55,6 @@
     tau(k+1) = tau(k) + dtau
   ENDFOR
   Sth = (1.0 - (1.0 - sqrt(epsil)) * exp(-sqrt(epsil)*tau)) * Bp
-
-
-  IRRADIATED = 0L  &  ZERO = 1L  &  THERMALIZED = 2L  &  REFLECTIVE = 3L
-
-  top_bound = ZERO
-  bot_bound = IRRADIATED
-  Ibot = Bp[0]
-  Itop = 0.0D0
   
   ;; Spawn C program and write input data to pipe
 
@@ -71,17 +63,15 @@
 
   writeu, pipe, NmaxIter, double(iterLimit), Ngdelay, Ngorder, Ngperiod
   writeu, pipe, Nrays, Nlambda, Ndep
-  writeu, pipe, top_bound, bot_bound
-  
   writeu, pipe, height
   writeu, pipe, Adamp, lambda
-  writeu, pipe, chi, Bp, epsil, Itop, Ibot
+  writeu, pipe, chi, Bp, epsil
 
   ;; allocate space and read back results from pipe
 
   phi = dblarr(Nlambda)  &  wphi = 0.0D+0
   S   = dblarr(Ndep)     &  Ie   = dblarr(Nlambda, Nrays)
-;;stop
+
   readu, pipe, phi, wphi, S, Ie
   free_lun, pipe
   
@@ -101,7 +91,7 @@
    PSopen, FILENAME="acc_lambda_" + string(epsil[0], FORMAT='(E7.1)') + $
            '_' + strtrim(string(Niter, FORMAT='(I)') + '.eps', 2), /COLOR
 
-  loadct, 1, /SILENT
+  loadct, 1
   plot, tau(1:Ndep-1), S(1:Ndep-1), YTITLE='Source function', $
    xtitle='Optical depth', /XLOG, /YLOG, /NODATA
 

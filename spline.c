@@ -19,13 +19,15 @@
 
 /* --- Global variables --                             -------------- */
 
-static bool_t  ascend;
-static int     Ntable;
-static double *xtable, xmin, xmax;
+// 01/07/19 epm: Rename these global variables appending "2"
+// to avoid the same name that is used in "expspline.c".
+static bool_t  ascend2;
+static int     Ntable2;
+static double *xtable2, xmin2, xmax2, *M2 = NULL;
+static double *ytable2;
+
 
 /* ------- begin -------------------------- splineCoef.c ------------ */
-
-static double *M = NULL, *ytable;
 
 void splineCoef(int N, double *x, double *y)
 {
@@ -34,11 +36,11 @@ void splineCoef(int N, double *x, double *y)
 
   double  p, *q, hj, hj1, D, D1, mu;
 
-  ascend = (x[1] > x[0]) ? TRUE : FALSE;
-  xmin = (ascend) ? x[0] : x[N-1];
-  xmax = (ascend) ? x[N-1] : x[0];
+  ascend2 = (x[1] > x[0]) ? TRUE : FALSE;
+  xmin2 = (ascend2) ? x[0] : x[N-1];
+  xmax2 = (ascend2) ? x[N-1] : x[0];
 
-  q = M = (double *) realloc(M, N * sizeof(double));
+  q = M2 = (double *) realloc(M2, N * sizeof(double));
   u = (double *) realloc(u, N * sizeof(double));
   hj = x[1] - x[0];
   D  = (y[1] - y[0]) / hj;
@@ -56,12 +58,12 @@ void splineCoef(int N, double *x, double *y)
     hj = hj1;  D = D1;
   }
 
-  M[N - 1] = 0.0;
+  M2[N - 1] = 0.0;
   for (j = N-2;  j >= 0;  j--) {
-    M[j] = q[j]*M[j+1] + u[j];
+    M2[j] = q[j]*M2[j+1] + u[j];
   }
-  Ntable = N;
-  xtable = x;  ytable = y;
+  Ntable2 = N;
+  xtable2 = x;  ytable2 = y;
 }
 /* ------- end ---------------------------- splineCoef.c ------------ */
 
@@ -75,22 +77,22 @@ void splineEval(int N, double *x, double *y, bool_t hunt)
   double hj, fx, fx1;
 
   for (n = 0;  n < N;  n++) {
-    if (x[n] <= xmin)
-      y[n] = (ascend) ? ytable[0] : ytable[Ntable-1];
-    else if (x[n] >= xmax)
-      y[n] = (ascend) ? ytable[Ntable-1] : ytable[0];
+    if (x[n] <= xmin2)
+      y[n] = (ascend2) ? ytable2[0] : ytable2[Ntable2-1];
+    else if (x[n] >= xmax2)
+      y[n] = (ascend2) ? ytable2[Ntable2-1] : ytable2[0];
     else {
       if (hunt) 
-	Hunt(Ntable, xtable, x[n], &j);
+	Hunt(Ntable2, xtable2, x[n], &j);
       else
-	Locate(Ntable, xtable, x[n], &j);
+	Locate(Ntable2, xtable2, x[n], &j);
 
-      hj  = xtable[j+1] - xtable[j];
-      fx  = (x[n] - xtable[j]) / hj;
+      hj  = xtable2[j+1] - xtable2[j];
+      fx  = (x[n] - xtable2[j]) / hj;
       fx1 = 1 - fx;
 
-      y[n] = fx1*ytable[j] + fx*ytable[j+1] +
-	(fx1*(SQ(fx1) - 1) * M[j] + fx*(SQ(fx) - 1) * M[j+1]) * SQ(hj)/6.0;
+      y[n] = fx1*ytable2[j] + fx*ytable2[j+1] +
+	(fx1*(SQ(fx1) - 1) * M2[j] + fx*(SQ(fx) - 1) * M2[j+1]) * SQ(hj)/6.0;
     }
   }
 }

@@ -26,7 +26,7 @@
 
 
 enum type        {ATOMIC_LINE, ATOMIC_CONTINUUM,
-		  VIBRATION_ROTATION, MOLECULAR_ELECTRONIC};
+                  VIBRATION_ROTATION, MOLECULAR_ELECTRONIC};
 enum ftype       {FIXED_LINE, FIXED_CONTINUUM};
 enum Trad_option {TRAD_ATMOSPHERIC, TRAD_PHOTOSPHERIC, TRAD_CHROMOSPHERIC};
 enum vdWaals     {UNSOLD, RIDDER_RENSBERGEN, BARKLEM, KURUCZ};
@@ -235,7 +235,8 @@ bool_t readDamping(Atom *atom);
 bool_t writeDamping(Atom *atom);
 
 bool_t readBarklemTable(enum Barklemtype type, Barklemstruct *bs);
-bool_t getBarklemcross(Barklemstruct *bs, RLK_Line *rlk);
+// 02/10/19 epm: getBarklemcross() includes the wavelength (last argument).
+bool_t getBarklemcross(Barklemstruct *bs, RLK_Line *rlk, double lambda_air);
 bool_t getBarklemactivecross(AtomicLine *line);
 
 

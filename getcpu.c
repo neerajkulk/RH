@@ -70,9 +70,16 @@ void getCPU(int level, enum CPUaction action, char *label)
   clock_t CPUtime;
 #endif
 
-  if (level == 0 && action == TIME_START && !commandline.showkeywords) {
-    stats.fp_CPU = fopen(TIME_DOT_OUT, "w");
-    setvbuf(stats.fp_CPU, NULL, _IOLBF, BUFSIZ);
+  if (level == 0 && action == TIME_START && !commandline.showkeywords)
+  {
+    // 13/06/19 epm: After converting RH executables to functions,
+    // the file remains open (there is not end of application to close it)
+    // and, therefore, we should only open it once.
+    if (stats.fp_CPU == NULL)
+    {
+      stats.fp_CPU = fopen(TIME_DOT_OUT, "w");
+      if (stats.fp_CPU != NULL) setvbuf(stats.fp_CPU, NULL, _IOLBF, BUFSIZ);
+    }
   }
 
   if (!stats.printCPU || !stats.fp_CPU)

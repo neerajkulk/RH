@@ -2,7 +2,7 @@
 
        Version:       rh2.0, 1-D plane-parallel
        Author:        Han Uitenbroek (huitenbroek@nso.edu)
-       Last modified: Wed Oct  9 16:26:55 2019 --
+       Last modified: Fri Dec  6 10:11:10 2019 --
 
        --------------------------                      ----------RH-- */
 
@@ -61,6 +61,9 @@ void readInput()
      setboolValue},
     {"ATMOS_ITOP", "none", FALSE, KEYWORD_OPTIONAL, input.Itop, setcharValue},
 
+    // 21/06/19 epm: New input for the directory containing Barklem files.
+    {"BARKLEM_DIR", "../../var/Barklem", FALSE, KEYWORD_OPTIONAL,
+     input.barklem_dir, setcharValue},
     {"WAVETABLE", "none", FALSE, KEYWORD_OPTIONAL, input.wavetable_input,
      setcharValue},
     {"ATOMS_FILE",  "", FALSE, KEYWORD_REQUIRED, input.atoms_input,
@@ -116,8 +119,9 @@ void readInput()
      setcharValue},
     {"RLK_SCATTER", "FALSE", FALSE, KEYWORD_DEFAULT, &input.rlkscatter,
      setboolValue},
-    {"KURUCZ_PF_DATA", "../../Atoms/pf_Kurucz.input", FALSE,
-     KEYWORD_REQUIRED, &input.pfData, setcharValue},
+    // 09/09/19 epm: Change the default value and make it optional.
+    {"KURUCZ_PF_DATA", "../../var/Kurucz/pf_Kurucz.input", FALSE,
+     KEYWORD_OPTIONAL, &input.pfData, setcharValue},
     {"SOLVE_NE", "NONE", FALSE, KEYWORD_DEFAULT, &input.solve_ne,
      setnesolution},
     {"OPACITY_FUDGE", "none", FALSE, KEYWORD_OPTIONAL, &input.fudgeData,
@@ -144,7 +148,7 @@ void readInput()
 
     {"VMICRO_CHAR", "",     FALSE, KEYWORD_REQUIRED, &atmos.vmicro_char,
      setdoubleValue},
-    {"VMACRO_TRESH", "0.1", FALSE, KEYWORD_OPTIONAL, &atmos.vmacro_tresh,
+    {"VMACRO_TRESH", "0.0", FALSE, KEYWORD_OPTIONAL, &atmos.vmacro_tresh,
      setdoubleValue},
     {"LAMBDA_REF",   "500.0", FALSE, KEYWORD_DEFAULT, &atmos.lambda_ref,
      setdoubleValue},

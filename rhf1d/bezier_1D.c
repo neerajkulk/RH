@@ -10,11 +10,12 @@
    Modifications:
            2017-03-12, JdlCR: Created!
 
-       Last modified: Wed Feb 20 13:30:27 2019 --
+       Last modified: Fri Dec  6 09:42:50 2019 --
 
        --------------------------                      ----------RH-- */
 
 
+#include <stdlib.h>
 #include <math.h>
 #include <string.h>
 
@@ -169,7 +170,8 @@ void Piece_Stokes_Bezier3_1D(int nspect, int mu, bool_t to_obs,
       
     dsdn = fabs(z[k+dk] - z[k]) * imu;
       
-    if(fabs(k - k_end) > 1){
+    // 10/10/19 epm: Change fabs(k - k_end) for abs(k - k_end).
+    if(abs(k - k_end) > 1){
       dsdn2 = fabs(z[k+2*dk] - z[k+dk]) * imu;
       dchi_dn = cent_deriv(dsdn, dsdn2, chi[k], chi[k+dk], chi[k+2*dk]);       
     } else
@@ -183,7 +185,8 @@ void Piece_Stokes_Bezier3_1D(int nspect, int mu, bool_t to_obs,
     /* --- Bezier3 integrated dtau --              ------------------ */
       
     dtau_dw = 0.25 * dsdn * (chi[k] + chi[k+dk] + c1 + c2);
-    dt = dtau_uw, dt03 = dt / 3.0;
+    dt = dtau_uw;
+    dt03 = dt / 3.0;
   
     /* --- Bezier3 coeffs. --                      ------------------ */
       
@@ -231,7 +234,7 @@ void Piece_Stokes_Bezier3_1D(int nspect, int mu, bool_t to_obs,
 	V0[i] += Ma[i][j] * I[j][k-dk] + Mb[i][j] * Su[j] +
 	  Mc[i][j] * S0[j];
       }
-      V0[i] += dt03 * (gamma * dS0[i] - theta * dSu[i]);
+      V0[i] += -dt03 * (gamma * dS0[i] - theta * dSu[i]);
     }
     /* --- Solve linear system to get the intensity -- -------------- */
       
@@ -239,8 +242,7 @@ void Piece_Stokes_Bezier3_1D(int nspect, int mu, bool_t to_obs,
     m4v(Md, V0, V1);      // Multiply Md^-1 * V0
 
     for(i=0;i<4;i++) I[i][k] = V1[i];
-      
-      
+            
     /* --- Shift values for next depth --          ------------------ */
       
     memcpy(Su,   S0, 4*sizeof(double));
@@ -413,7 +415,8 @@ void Piecewise_Bezier3_1D(int nspect, int mu, bool_t to_obs,
        
        /* --- dchi/ds at downwind point --             -------------- */
        
-       if (fabs(k - k_end) > 1) {
+       // 10/10/19 epm: Change fabs(k - k_end) for abs(k - k_end).
+       if (abs(k - k_end) > 1) {
 	 dsdn2=fabs(geometry.height[k+2*dk] -
 		    geometry.height[k+dk]) * zmu;
 	 dchi_dn = cent_deriv(dsdn,dsdn2,chi[k],chi[k+dk],chi[k+2*dk]);       

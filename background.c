@@ -134,6 +134,9 @@ extern Spectrum spectrum;
 extern InputData input;
 extern char messageStr[];
 
+// 02/07/19 epm: Control of new RH executions.
+extern bool_t new_background;
+
 
 /* ------- begin -------------------------- Background.c ------------ */
 
@@ -155,9 +158,15 @@ void Background(bool_t write_analyze_output, bool_t equilibria_only)
 
   getCPU(2, TIME_START, NULL);
 
+  // 02/07/19 epm: Control of new RH executions.
+  if (new_background) {
+    ne_iter = 0;
+    new_background = FALSE;
+  }
+
   if (input.solve_ne == ONCE  || input.solve_ne == ITERATION ) {
     fromscratch = (input.solve_ne == ONCE  ||
-		   (input.solve_ne == ITERATION  &&  ne_iter == 0)) ?
+                  (input.solve_ne == ITERATION  &&  ne_iter == 0)) ?
       TRUE : FALSE;
     Solve_ne(atmos.ne, fromscratch);
     ne_iter++;

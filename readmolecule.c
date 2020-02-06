@@ -85,11 +85,11 @@ void readMolecule(Molecule *molecule, char *fileName, bool_t active)
     sprintf(messageStr, "Unable to open inputfile %s", fileName);
     Error(ERROR_LEVEL_2, routineName, messageStr);
   } else {
-    sprintf(messageStr, " -- reading input file: %s %s", 
+  /*  sprintf(messageStr, " -- reading input file: %s %s", 
 	    fileName, (active) ? "(active)\n\n" : "(passive)\n");
 
 
-    Error(MESSAGE, routineName, messageStr);
+    Error(MESSAGE, routineName, messageStr);*/
     initMolecule(molecule);
   }
   /* --- Read molecule ID --                           -------------- */
@@ -627,10 +627,8 @@ void readMolecularLines(struct Molecule *molecule, char *line_data)
       initMolLine(mrt, VIBRATION_ROTATION);
 
       mrt->molecule = molecule;
-      
       strcpy(mrt->configi, "X");
       strcpy(mrt->configj, "X");
-
       mrt->Nlambda = Nlambda;
       mrt->qwing   = qwing;
 

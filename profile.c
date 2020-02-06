@@ -113,10 +113,10 @@ void Profile(AtomicLine *line)
     Larmor = (Q_ELECTRON / (4.0*PI*M_ELECTRON)) * (line->lambda0*NM_TO_M);
 
     zm = Zeeman(line);
-    sprintf(messageStr,
+/*    sprintf(messageStr,
 	    " -- Atom %2s, line %3d -> %3d has %2d Zeeman components\n",
 	    atom->ID, line->j, line->i, zm->Ncomponent);
-    Error(MESSAGE, routineName, messageStr);
+    Error(MESSAGE, routineName, messageStr);*/
   }
 
   /* --- Initialize permanent storage for line profiles -- ---------- */

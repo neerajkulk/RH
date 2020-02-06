@@ -9,13 +9,14 @@
 /* --- Routines for reading and writing populations from and to file.
        XDR (external data representation) version. --  -------------- */
 
-#include <stdlib.h> 
+#include <stdlib.h>
 #include <string.h>
 
 #include "rh.h"
 #include "atom.h"
 #include "atmos.h"
 #include "error.h"
+#include "inputs.h"
 #include "xdr.h"
 
 /* --- Function prototypes --                          -------------- */
@@ -24,6 +25,7 @@
 /* --- Global variables --                             -------------- */
 
 extern Atmosphere atmos;
+extern InputData input;
 extern char messageStr[];
 
 
@@ -50,7 +52,7 @@ bool_t xdr_populations(XDR *xdrs, char *atmosID, int Nlevel, int Nspace,
     result &= xdr_counted_string(xdrs, &ID);
     if (!strstr(ID, atmosID)) {
       sprintf(messageStr, "Populations were computed with different"
-	      "atmosphere (%s) than current one", ID);
+                          " atmosphere (%s) than current one", ID);
       Error(WARNING, routineName, messageStr);
     }
     free(ID);
@@ -87,23 +89,48 @@ void writePopulations(Atom *atom)
   FILE *fp_out;
   XDR   xdrs;
 
+  // 07/06/19 epm: We don't need this anymore.
+  // FILE *f;
+  // register int i, k;
+  // char filetxt[strlen(atom->popsoutFile) + 4 + 1];
+  // strcpy(filetxt, atom->popsoutFile);
+  // strcat(filetxt,".txt");
+
   if ((fp_out = fopen(atom->popsoutFile, "w")) == NULL) {
-    sprintf(messageStr, "Unable to open output file %s",
-	    atom->popsoutFile);
+    sprintf(messageStr, "Unable to open output file %s", atom->popsoutFile);
     Error(ERROR_LEVEL_1, routineName, messageStr);
     return;
   }
   xdrstdio_create(&xdrs, fp_out, XDR_ENCODE);
 
   if (!xdr_populations(&xdrs, atmos.ID, atom->Nlevel, atmos.Nspace,
-		       atom->n[0], atom->nstar[0])) {
+                       atom->n[0], atom->nstar[0])) {
     sprintf(messageStr, "Unable to write to output file %s",
-	    atom->popsoutFile);
+            atom->popsoutFile);
     Error(ERROR_LEVEL_1, routineName, messageStr);
   }
 
   xdr_destroy(&xdrs);
   fclose(fp_out);
+
+  // 07/06/19 epm: We don't need this anymore.
+  // /* BRC and DOS playing */
+  //
+  // if ((f = fopen(filetxt, "w")) == NULL)
+  // {
+  //   printf("Error opening file in pops_xdr.c!!!\n");
+  //   exit(1);
+  // }
+  // for (k = 0;  k < atmos.Nspace;  k++)
+  // {
+  //   for (i = 0;  i < atom->Nlevel;  i++)
+  //   {
+  //     fprintf(f, "%d %d %lf\n", i, k, atom->n[i][k] / atom->nstar[i][k]);
+  //   }
+  // }
+  // fclose(f);
+  //
+  // /* BRC and DOS playing (end) */
 }
 /* ------- end ---------------------------- writePopulations.c ------ */
 
@@ -124,8 +151,11 @@ void readPopulations(Atom *atom)
          --                                            -------------- */
 
   if ((fp_in = fopen(atom->popsinFile, "r")) == NULL) {
-    sprintf(messageStr, "Unable to open input file %s",
-	    atom->popsinFile);
+    // 31/07/19 epm: Write the message with a suggestion.
+    sprintf(messageStr,
+      "Unable to open input file %s\n"
+      " Are chemical symbols in the last column of %s capitalized?",
+      atom->popsinFile, input.atoms_input);
     Error(ERROR_LEVEL_2, routineName, messageStr);
   }
   xdrstdio_create(&xdrs, fp_in, XDR_DECODE);

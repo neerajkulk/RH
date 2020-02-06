@@ -52,6 +52,7 @@ bool_t readB(Atmosphere *atmos)
   off_t   offset;
   FILE   *fp_stokes;
   XDR     xdrs;
+  int     i, nitems;
 
   if (!strcmp(input.Stokes_input, "none")) return FALSE;
 
@@ -77,12 +78,22 @@ bool_t readB(Atmosphere *atmos)
   } else {
     recordsize = atmos->Nspace;
 
-    result &= (fread(atmos->B, sizeof(double), recordsize,
-		     fp_stokes) == recordsize);
-    result &= (fread(atmos->gamma_B, sizeof(double), recordsize,
-		     fp_stokes) == recordsize);
-    result &= (fread(atmos->chi_B, sizeof(double), recordsize,
-		     fp_stokes) == recordsize);
+    // 05/11/19 epm: DeSIRe reads the magnetic field in ASCII format.
+    //result &= (fread(atmos->B, sizeof(double), recordsize,
+    //                 fp_stokes) == recordsize);
+    //result &= (fread(atmos->gamma_B, sizeof(double), recordsize,
+    //                 fp_stokes) == recordsize);
+    //result &= (fread(atmos->chi_B, sizeof(double), recordsize,
+    //                 fp_stokes) == recordsize);
+
+    for (result = TRUE, i = 0; i < recordsize; i++) {
+      nitems = fscanf(fp_stokes, "%lf %lf %lf",
+                      &atmos->B[i], &atmos->gamma_B[i], &atmos->chi_B[i]);
+      if (nitems != 3) {
+        result = FALSE;
+        break;
+      }
+    }
   }
 
   if (!result) {

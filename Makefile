@@ -6,6 +6,10 @@
 #
 ##     --------------------------                      ----------RH-- ##
 
+# 10/10/19 epm: CPU and OS defined with system calls.
+CPU := $(shell uname -m)
+OS  := $(shell uname -s)
+
 include makefile.$(CPU).$(OS)
 
 
@@ -67,13 +71,13 @@ librh.a: \
  librh.a(pops_xdr.o) \
  librh.a(profile.o) \
  librh.a(radrate_xdr.o) \
+ librh.a(rayleigh.o) \
  librh.a(readatom.o) \
  librh.a(readb_xdr.o) \
- librh.a(readj.o) \
- librh.a(readvalue.o) \
- librh.a(rayleigh.o) \
  librh.a(readinput.o) \
+ librh.a(readj.o) \
  librh.a(readmolecule.o) \
+ librh.a(readvalue.o) \
  librh.a(redistribute.o) \
  librh.a(scatter.o) \
  librh.a(solvene.o) \
@@ -127,12 +131,13 @@ clean:
 
 ## --- Explicit dependencies on include files --       -------------- ##
 
-
+# 21/06/19 epm: "barklem.o" depends on "inputs.h".
+# 31/07/19 epm: "barklem.o" depends on "desire.h".
 librh.a(abundance.o):     rh.h  atom.h  atmos.h  constant.h  error.h  inputs.h  xdr.h  atomweights.h
 librh.a(accelerate.o):    rh.h  accelerate.h  error.h  statistics.h
 librh.a(backgropac_xdr.o):rh.h  atom.h  atmos.h  spectrum.h  background.h  error.h  inputs.h  xdr.h
 librh.a(background.o):    rh.h  atom.h  atmos.h  spectrum.h  constant.h  background.h  error.h  statistics.h  inputs.h  xdr.h
-librh.a(barklem.o):       rh.h  atom.h  atmos.h  constant.h  error.h
+librh.a(barklem.o):       rh.h  atom.h  atmos.h  constant.h  inputs.h  error.h  desire.h
 librh.a(bezier_aux.o):    bezier.h
 librh.a(broad.o):         rh.h  atom.h  atmos.h  constant.h  error.h
 librh.a(brs_xdr.o):       rh.h  atom.h  atmos.h  spectrum.h  error.h  xdr.h
@@ -154,7 +159,7 @@ librh.a(getcpu.o):        rh.h  statistics.h  error.h  inputs.h
 librh.a(getlambda.o):     rh.h  atom.h  atmos.h  constant.h  error.h  inputs.h
 librh.a(getline.o):       rh.h  error.h
 librh.a(giigen.o):        rh.h  atom.h  constant.h
-librh.a(cocollisions.o):  rh.h  atom.h  atmos.h  error.h  constant.h
+librh.a(h2collisions.o):  rh.h  atom.h  atmos.h  error.h  constant.h
 librh.a(humlicek.o):      rh.h  complex.h
 librh.a(hunt.o):          rh.h
 librh.a(hydrogen.o):      rh.h  atom.h  atmos.h  constant.h  background.h  error.h

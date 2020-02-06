@@ -4,6 +4,10 @@
        Author:        Han Uitenbroek (huitenbroek@nso.edu)
        Last modified: Fri Jan 20 14:51:15 2012 --
 
+       Updates (epm): Adaptation to the DeSIRe project.
+                      Interoperability C-Fortran.
+                      Conversion of main() as a function for Fortran.
+
        --------------------------                      ----------RH-- */
 
 /* --- Solves radiative transfer for given atmosphere and model atom
@@ -11,11 +15,13 @@
        numbers and angle-averaged radiation field is given.
 
 
-       Expects input file ``ray.input'' containing two lines of the form
+       Expects input file "ray.input" containing two lines of the form
 
          muz
          Nspect  wave_index1  ....   wave_indexNspect
+
        --                                              -------------- */
+
 
 #include <fcntl.h>
 #include <math.h>
@@ -42,23 +48,36 @@
 
 /* --- Function prototypes --                          -------------- */
 
+void closefiles(void);
+
+int solveray(int argc, char *argv[], int *nspect, int *nsize, double *lambda,
+             double *I, double *Q, double *U, double *V);
+
 
 /* --- Global variables --                             -------------- */
 
-enum Topology topology = ONE_D_PLANE;
-
-Atmosphere atmos;
-Geometry geometry;
-Spectrum spectrum;
-ProgramStats stats;
-InputData input;
-CommandLine commandline;
-char messageStr[MAX_LINE_SIZE];
+// 31/07/19 epm: Global variables definition is now in "rh_glob.c".
+extern Atmosphere atmos;
+extern Geometry geometry;
+extern Spectrum spectrum;
+extern InputData input;
+extern char messageStr[];
 
 
 /* ------- begin -------------------------- solveray.c -------------- */
 
-int main(int argc, char *argv[])
+// 29/05/19 epm: Function to be called from Fortran.
+int solveray_( int *nspect, int *nsize, double *lambda, double *stokes_I,
+               double *stokes_Q, double *stokes_U, double *stokes_V )
+{
+  static char *argv[] = {"solveray", NULL};
+  return(solveray(1, argv, nspect, nsize, lambda,
+                  stokes_I, stokes_Q, stokes_U, stokes_V));
+}
+
+int solveray( int argc, char *argv[],
+              int *nspect, int *nsize, double *lambda, double *stokes_I,
+              double *stokes_Q, double *stokes_U, double *stokes_V )
 {
   register int n, k, la;
 
@@ -66,6 +85,7 @@ int main(int argc, char *argv[])
   bool_t  result, exit_on_EOF, to_obs, initialize, crosscoupling,
           analyze_output, equilibria_only;
   int     Nspect, Nread, Nrequired, checkPoint, *wave_index = NULL;
+  int     ier;
   double  muz, *S, *chi, *J;
   FILE   *fp_out, *fp_ray, *fp_stokes, *fp_out_asc;
   XDR     xdrs;
@@ -73,7 +93,34 @@ int main(int argc, char *argv[])
 
   setOptions(argc, argv);
   getCPU(0, TIME_START, NULL);
-  SetFPEtraps();
+
+  // 18/06/19 epm: La siguiente llamada habilita el lanzamiento de floating
+  // point exceptions (por defecto 1/0 lanza una excepcion pero 1.0/0.0 no).
+  // SetFPEtraps() llama a feenableexcept(int excepts) -OS dependent- cuyo
+  // manual en linux dice que 'excepts' puede ser:
+  // FE_DIVBYZERO  division by zero
+  // FE_INEXACT    inexact result: rounding was necessary to store the result
+  // FE_INVALID    domain error (e.g. 0.0/0.0, sqrt(-1))
+  // FE_OVERFLOW   operation too large to be representable
+  // FE_UNDERFLOW  operation subnormal with a loss of precision
+  // FE_ALL_EXCEPT bitwise OR of all supported floating-point exceptions 
+  // Examples:
+  // 0.0/0.0 = nan       => exceptions raised: FE_INVALID
+  // 1.0/0.0 = inf       => exceptions raised: FE_DIVBYZERO
+  // 1.0/10.0 = 0.100000 => exceptions raised: FE_INEXACT
+  // sqrt(-1) = -nan     => exceptions raised: FE_INVALID
+  // DBL_MAX*2.0 = inf   => exceptions raised: FE_INEXACT & FE_OVERFLOW
+  // nextafter(DBL_MIN/pow(2.0,52),0.0) = 0.0 => FE_INEXACT & FE_UNDERFLOW
+  //
+  // El caso es que al convertir 'solveray' en rutina, las excepciones
+  // se habilitan tambien en el codigo Fortran y este no esta preparado para
+  // ello. Es decir, el codigo de DeSIRe admite que se produzcan operaciones
+  // invalidas sin lanzar ningun aviso porque simplemente la solucion en
+  // cuestion no convergera. Para evitar que el codigo Fortran aborte con una
+  // floating point exception, debemos dejarlas inhabilitadas en C.
+  //
+  // Trap floating point exceptions on various machines.
+  // SetFPEtraps();
 
   /* --- Read input data and initialize --             -------------- */
 
@@ -91,7 +138,7 @@ int main(int argc, char *argv[])
     sprintf(messageStr, "Unable to open inputfile %s", RAY_INPUT_FILE);
     Error(ERROR_LEVEL_2, argv[0], messageStr);
   }
-  
+
   getLine(fp_ray, COMMENT_CHAR, inputLine, exit_on_EOF=TRUE);
   Nread = sscanf(inputLine, "%lf", &muz);
   checkNread(Nread, Nrequired=1, argv[0], checkPoint=1);
@@ -106,6 +153,7 @@ int main(int argc, char *argv[])
       input.StokesMode == POLARIZATION_FREE) {
     input.StokesMode = FULL_STOKES;
   }
+
   /* --- redefine geometry for just this one ray --    -------------- */
 
   atmos.Nrays = geometry.Nrays = 1;
@@ -176,18 +224,61 @@ int main(int argc, char *argv[])
 
     if (atmos.Stokes || input.backgr_pol) {
       for (la = 0;  la < spectrum.Nspect;  la++) {
-	fprintf(fp_out_asc, "%15.6lg %12.5lg %12.5lg %12.5lg %12.5lg\n",
+      /*fprintf(fp_out_asc, "%15.9lf %12.5lg %12.5lg %12.5lg %12.5lg\n",*/
+	fprintf(fp_out_asc, "%19.13lf %17.10lg %17.10lg %17.10lg %17.10lg\n",
+
 		spectrum.lambda[la],
 		spectrum.I[0][la], spectrum.Stokes_Q[0][la],
 		spectrum.Stokes_U[0][la], spectrum.Stokes_V[0][la]);
       }
     } else {
       for (la = 0;  la < spectrum.Nspect;  la++) {
-	fprintf(fp_out_asc, "%15.6lg %12.5lg %12.5lg %12.5lg %12.5lg\n",
+      /*fprintf(fp_out_asc, "%15.9lf %12.5lg %12.5lg %12.5lg %12.5lg\n",*/
+	fprintf(fp_out_asc, "%19.13lf %17.10lg %17.10lg %17.10lg %17.10lg\n",
+
 		spectrum.lambda[la],
 		spectrum.I[0][la], 0.0, 0.0, 0.0);
       }
     }
+    fclose(fp_out_asc);
+  }
+
+  /* --- 10/06/19 epm: Save the spectrum in the array arguments. ---------- */
+
+  *nspect = spectrum.Nspect;
+  if (*nsize >= *nspect)
+  {
+    if (atmos.Stokes || input.backgr_pol)
+    {
+      for (la = 0; la < *nspect; la++)
+      {
+        lambda[la]   = spectrum.lambda[la];
+        stokes_I[la] = spectrum.I[0][la];
+        stokes_Q[la] = spectrum.Stokes_Q[0][la];
+        stokes_U[la] = spectrum.Stokes_U[0][la];
+        stokes_V[la] = spectrum.Stokes_V[0][la];
+      }
+    }
+    else
+    {
+      for (la = 0; la < *nspect; la++)
+      {
+        lambda[la]   = spectrum.lambda[la];
+        stokes_I[la] = spectrum.I[0][la];
+        stokes_Q[la] = 0.0;
+        stokes_U[la] = 0.0;
+        stokes_V[la] = 0.0;
+      }
+    }
+    ier = 0;
+  }
+  else if (*nsize == 0)   // we don't want the data
+  {
+    ier = 0;
+  }
+  else   // unsufficient memory for the arrays
+  {
+    ier = -1;
   }
 
   /* --- Read wavelength indices for which chi and S are to be
@@ -273,5 +364,10 @@ int main(int argc, char *argv[])
   xdr_destroy(&xdrs);
   fclose(fp_out);
   printTotalCPU();
+
+  // 09/09/19 epm: Just before finishing, close open writing descriptors.
+  closefiles();
+
+  return(ier);
 }
 /* ------- end ---------------------------- solveray.c -------------- */

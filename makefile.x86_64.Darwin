@@ -1,7 +1,7 @@
 ## --- Machine dependent defs --                       -------------- ##
 #     
 #      CPU = x86_64
-#      OS  = Linux
+#      OS  = Darwin
 #
 #      Version:       rh2.0
 #      Author:        Han Uitenbroek (huitenbroek@nso.edu)
