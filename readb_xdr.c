@@ -78,14 +78,13 @@ bool_t readB(Atmosphere *atmos)
   } else {
     recordsize = atmos->Nspace;
 
-    // 05/11/19 epm: DeSIRe reads the magnetic field in ASCII format.
-    //result &= (fread(atmos->B, sizeof(double), recordsize,
-    //                 fp_stokes) == recordsize);
-    //result &= (fread(atmos->gamma_B, sizeof(double), recordsize,
-    //                 fp_stokes) == recordsize);
-    //result &= (fread(atmos->chi_B, sizeof(double), recordsize,
-    //                 fp_stokes) == recordsize);
-
+    // 05/11/19 epm: SIR writes the magnetic field in ASCII columns.
+    // result &= (fread(atmos->B, sizeof(double), recordsize,
+    //                  fp_stokes) == recordsize);
+    // result &= (fread(atmos->gamma_B, sizeof(double), recordsize,
+    //                  fp_stokes) == recordsize);
+    // result &= (fread(atmos->chi_B, sizeof(double), recordsize,
+    //                  fp_stokes) == recordsize);
     for (result = TRUE, i = 0; i < recordsize; i++) {
       nitems = fscanf(fp_stokes, "%lf %lf %lf",
                       &atmos->B[i], &atmos->gamma_B[i], &atmos->chi_B[i]);

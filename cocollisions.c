@@ -60,7 +60,7 @@ void COcollisions(struct Molecule *molecule)
   double hcomega_k, *beta, C_0;
 
   if (!strstr(molecule->ID, "CO")) {
-    sprintf(messageStr, "Molecule is not CO: %s\n", molecule->ID);
+    sprintf(messageStr, "Molecule is not CO: %s", molecule->ID);
     Error(ERROR_LEVEL_2, routineName, messageStr);
   }
 

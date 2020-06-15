@@ -325,8 +325,9 @@ void readKuruczLines(char *inputFile)
     }
     fclose(fp_linelist);
 
-    sprintf(messageStr, "Read %d Kurucz lines from file %s\n",
-	    Nline, listName);
+    // 04/04/20 epm: 'listName' includes '\n' at the end.
+    sprintf(messageStr, " Read %d Kurucz lines from file %s\n",
+            Nline, listName);
     Error(MESSAGE, routineName, messageStr);
     atmos.Nrlk += Nline;
   }

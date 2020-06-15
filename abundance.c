@@ -140,7 +140,7 @@ void readAbundance(Atmosphere *atmos)
   metallicity = POW10(input.metallicity);
   if (input.metallicity != 0.0) {
     sprintf(messageStr,
-	    "\nMultiplying metal abundances by metallicity of %5.3f\n\n",
+	    " Multiplying metal abundances by metallicity of %5.3f\n\n",
 	    metallicity);
     Error(MESSAGE, routineName, messageStr);
   }

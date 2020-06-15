@@ -498,7 +498,7 @@ double VoigtLookup(double a, double v)
 				NULL, TABLE_ALGORITHM);
       }
     }
-    sprintf(messageStr, "Created Voigt lookup tables\n");
+    sprintf(messageStr, " Created Voigt lookup tables\n\n");
     Error(MESSAGE, routineName, messageStr);
 
     initialize = FALSE;

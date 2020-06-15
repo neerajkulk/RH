@@ -57,16 +57,16 @@ void MULTIatmos(Atmosphere *atmos, Geometry *geometry)
   double *dscale, turbpress, turbelecpress, nbaryon, meanweight;
 
   /* --- P/Pe total ionized gas. Edited: BRC --          ------------ */
-  
+
   double threshold_ion = 1.9082806;
   double gas_pressure, elec_pressure ;
-  
+
   struct  stat statBuffer;
 
   getCPU(2, TIME_START, NULL);
 
   /* --- Get abundances of background elements --        ------------ */
- 
+
   readAbundance(atmos);
 
   /* --- Open the input file for model atmosphere in MULTI format - - */
@@ -75,9 +75,9 @@ void MULTIatmos(Atmosphere *atmos, Geometry *geometry)
     sprintf(messageStr, "Unable to open inputfile %s", input.atmos_input);
     Error(ERROR_LEVEL_2, routineName, messageStr);
   } else {
-    sprintf(messageStr, "\n -- reading input file: %s\n",
-	    input.atmos_input);
-    Error(MESSAGE, NULL, messageStr);
+    // sprintf(messageStr, " -- reading input file: %s\n\n",
+    //         input.atmos_input);
+    // Error(MESSAGE, NULL, messageStr);
   }
 
   atmos->NHydr = N_HYDROGEN_MULTI;
@@ -216,7 +216,7 @@ void MULTIatmos(Atmosphere *atmos, Geometry *geometry)
     if (geometry->scale != COLUMN_MASS) {
       sprintf(messageStr,
 	      "Height scale should be COLUMNMASS when nH not supplied: "
-	      "File %s", input.atmos_input);
+	      "file %s", input.atmos_input);
       Error(ERROR_LEVEL_2, routineName, messageStr);
     }
     atmos->nHtot = (double *) calloc(Ndep, sizeof(double));
@@ -352,9 +352,9 @@ void getBoundary(Geometry *geometry)
   case THERMALIZED: break;
   case IRRADIATED:
 
-    sprintf(messageStr, "\n -- reading irradiance input file: %s\n\n",
-	    input.Itop);
-    Error(MESSAGE, NULL, messageStr);
+    // sprintf(messageStr, " -- reading irradiance input file: %s\n\n",
+    //         input.Itop);
+    // Error(MESSAGE, NULL, messageStr);
 
     geometry->Itop = matrix_double(spectrum.Nspect, geometry->Nrays);
 

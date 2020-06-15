@@ -10,13 +10,21 @@
 #define __DESIRE_H__
 
 
+// 10/10/19 epm: Structure to pass Barklem data from SIR to RH.
 typedef struct
 {
   int    nlines;
   int   *anumber, *stage, *low, *up;
   float *alpha, *sigma, *wave;
 }
-DesireLines;
+SIRBarklem;
+
+// 04/04/20 epm: Structure to pass SIR configuration to RH.
+typedef struct
+{
+  int flagv;
+}
+SIRconfig;
 
 
 #endif /* !__DESIRE_H__ */

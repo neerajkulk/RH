@@ -2,7 +2,7 @@
 
        Version:       rh2.0, 1-D plane-parallel
        Author:        Han Uitenbroek (huitenbroek@nso.edu)
-       Last modified: Fri Dec  6 10:11:10 2019 --
+       Last modified: Tue Apr 28 22:03:49 2020 --
 
        --------------------------                      ----------RH-- */
 
@@ -172,7 +172,7 @@ void readInput()
 
     {"S_INTERPOLATION", "S_BEZIER3", FALSE, KEYWORD_DEFAULT,
      &input.S_interpolation, set_S_Interpolation},
-    {"S_INTERPOLATION_STOKES", "DELO_PARABOLIC", FALSE, KEYWORD_DEFAULT,
+    {"S_INTERPOLATION_STOKES", "DELO_BEZIER3", FALSE, KEYWORD_DEFAULT,
      &input.S_interpolation_stokes, set_S_interpolation_stokes},
 
     {"INTERPOLATE_3D", "BICUBIC_3D", FALSE, KEYWORD_DEFAULT,
@@ -226,7 +226,7 @@ void readInput()
   case TWO_D_PLANE:
     if (input.Eddington && atmos.angleSet.set != NO_SET) {
       Error(WARNING, routineName,
-	    "Ignoring value of keywords ANGLE_SET > NO_VERTICAL when\n "
+	    "Ignoring value of keywords ANGLE_SET > NO_VERTICAL when\n"
 	    " EDDINGTON is set to TRUE\n"
 	    " Using SET_VERTICAL with muz = 1/sqrt(3)");
       atmos.angleSet.set = SET_VERTICAL;
@@ -259,57 +259,52 @@ void readInput()
 	    "Value of LAMBDA_REF should be larger than or equal 0.0");
     break;
   }
-  /* --- Stokes for the moment only in 1D plane --     -------------- */
  
   if (strcmp(input.Stokes_input, "none")) {
+
+    /* --- Magnetic field is specified --              -------------- */
+
     switch (topology) {
     case ONE_D_PLANE:
     case TWO_D_PLANE:
-      if (atmos.B_char == 0.0) {
-	Error(WARNING, routineName,
-	      "Parameter atmos.B_char not set or set to zero\n"
-	      " Wavelength grids of line profiles do not take account "
-	      " of Zeeman splitting");
-      }
-      if (input.StokesMode == NO_STOKES) {
-        sprintf(messageStr, "%s",
-	      "Keyword STOKES_MODE == NO_STOKES.\n"
-	      " Set to FIELD_FREE, POLARIZATION_FREE, or FULL_STOKES\n"
-	      " when doing polarization calculations");
-	Error(ERROR_LEVEL_1, routineName, messageStr);
-      }
-      break;
     case THREE_D_PLANE:
       if (atmos.B_char == 0.0) {
-	Error(WARNING, routineName,
-	      "Parameter atmos.B_char not set or set to zero\n"
-	      " Wavelength grids of line profiles do not take account "
-	      " of Zeeman splitting");
+        Error(WARNING, routineName,
+              "Parameter atmos.B_char not set or set to zero\n"
+              " Wavelength grids of line profiles do not take account"
+              " of Zeeman splitting");
       }
       if (input.StokesMode == NO_STOKES) {
         sprintf(messageStr, "%s",
-	      "Keyword STOKES_MODE == NO_STOKES.\n"
-	      " Set to FIELD_FREE, POLARIZATION_FREE, or FULL_STOKES\n"
-	      " when doing polarization calculations");
-	Error(ERROR_LEVEL_1, routineName, messageStr);
+              "Keyword STOKES_MODE == NO_STOKES\n"
+              " Set to FIELD_FREE or FULL_STOKES\n"
+              " when doing polarization calculations");
+        Error(ERROR_LEVEL_1, routineName, messageStr);
       }
       break;
     case SPHERICAL_SYMMETRIC:
       Error(ERROR_LEVEL_2, routineName,
-	    "Cannot accomodate magnetic fields in this topology");
+            "Cannot accomodate magnetic fields in this topology");
     }
   } else {
+
+    /* --- No magnetic field input specified --        -------------- */
+    
     if (atmos.B_char != 0.0) {
       Error(WARNING, routineName,
-	    "Ignoring value of keyword B_STRENGTH_CHAR when no "
-	    "magnetic field is read");
+            "Ignoring value of keyword B_STRENGTH_CHAR when no "
+            "magnetic field is read");
     }
-    if (input.StokesMode > NO_STOKES) {
-      Error(WARNING, routineName,
-	    "Ignoring value of keyword STOKES_MODE when no "
-	    "magnetic field is read");
+    if ((input.StokesMode == FIELD_FREE ||
+         input.StokesMode == FULL_STOKES) &&
+        input.backgr_pol == FALSE) {
+      Error(ERROR_LEVEL_2, routineName,
+            "Should not run STOKES_MODE == FIELD_FREE or FULL_STOKES\n "
+            "when no magnetic field is read and "
+            "BACKGROUND_POLARIZATION == FALSE");
     }
   }
+
   /* --- Hydrostatic equilibrium only in 1-D plane parallel -- ------ */
 
   switch (topology) {

@@ -2,7 +2,7 @@
 
        Version:       rh2.0, 1-D plane-parallel
        Author:        Han Uitenbroek (huitenbroek@nso.edu)
-       Last modified: Thu Feb 24 16:40:14 2011 --
+       Last modified: Fri May  1 08:25:50 2020 --
 
        Updates (epm): Adaptation to the DeSIRe project.
                       Interoperability C-Fortran.
@@ -22,7 +22,6 @@
 
        --                                              -------------- */
 
-
 #include <string.h>
 
 #include "rh.h"
@@ -33,6 +32,7 @@
 #include "background.h"
 #include "statistics.h"
 #include "inputs.h"
+#include "error.h"
 #include "xdr.h"
 
 
@@ -65,14 +65,16 @@ extern bool_t new_passive_bb;   // for metal.c :: passive_bb()
 // 23/05/19 epm: Function to be called from Fortran.
 int rhf1d_( int *nspace, int *nlevel, int *nsize, double *coefs )
 {
-  static char *argv[] = {"rhf1d", NULL};
-  return(rhf1d(1, argv, nspace, nlevel, nsize, coefs));
+  static char *argv[] = {"rhf1d"};
+  int argc = sizeof(argv) / sizeof(argv[0]);
+  return(rhf1d(argc, argv, nspace, nlevel, nsize, coefs));
 }
 
 int rhf1d( int argc, char *argv[],
            int *nspace, int *nlevel, int *nsize, double *coefs )
 {
   bool_t write_analyze_output, equilibria_only;
+  double deltaJ;
   int    niter, nact;
   int    index, i, k;
   int    ier;
@@ -101,7 +103,7 @@ int rhf1d( int argc, char *argv[],
   // FE_INVALID    domain error (e.g. 0.0/0.0, sqrt(-1))
   // FE_OVERFLOW   operation too large to be representable
   // FE_UNDERFLOW  operation subnormal with a loss of precision
-  // FE_ALL_EXCEPT bitwise OR of all supported floating-point exceptions 
+  // FE_ALL_EXCEPT bitwise OR of all supported floating-point exceptions
   // Examples:
   // 0.0/0.0 = nan       => exceptions raised: FE_INVALID
   // 1.0/0.0 = inf       => exceptions raised: FE_DIVBYZERO
@@ -112,10 +114,10 @@ int rhf1d( int argc, char *argv[],
   //
   // El caso es que al convertir 'rhf1d' en rutina, las excepciones
   // se habilitan tambien en el codigo Fortran y este no esta preparado para
-  // ello. Es decir, el codigo de DeSIRe admite que se produzcan operaciones
+  // ello. Es decir, el codigo de SIR admite que se produzcan operaciones
   // invalidas sin lanzar ningun aviso porque simplemente la solucion en
-  // cuestion no convergera. Para evitar que el codigo Fortran aborte con una
-  // floating point exception, debemos dejarlas inhabilitadas en C.
+  // cuestion no convergera. Para evitar que este codigo Fortran aborte con
+  // una floating point exception, debemos dejarlas inhabilitadas en C.
   //
   // Trap floating point exceptions on various machines.
   // SetFPEtraps();
@@ -146,14 +148,19 @@ int rhf1d( int argc, char *argv[],
 
   Iterate(input.NmaxIter, input.iterLimit);
 
+  /* --- If appropriate final solution(s) should be polarized -- ---- */
+
   adjustStokesMode();
   niter = 0;
   while (niter < input.NmaxScatter) {
-    if (solveSpectrum(FALSE, FALSE) <= input.iterLimit) break;
+    deltaJ = solveSpectrum(FALSE, FALSE);
+    if (!input.backgr_pol && deltaJ <= input.iterLimit) break;
     niter++;
   }
 
   /* --- Write output files --                         -------------- */
+
+  // 04/04/20 epm: Where possible, avoid writing on the hard disk.
 
   if (atmos.hydrostatic) {
     geometry.scale = COLUMN_MASS;
@@ -161,17 +168,17 @@ int rhf1d( int argc, char *argv[],
   }
   getCPU(1, TIME_START, NULL);
 
-  writeInput();
-  writeAtmos(&atmos);
-  writeGeometry(&geometry);
-  writeSpectrum(&spectrum);
-  writeFlux(FLUX_DOT_OUT);
+  // writeInput();              // we don't want "input.out"
+  writeAtmos(&atmos);           // avoided setting ATMOS_OUTPUT = none
+  writeGeometry(&geometry);     // avoided setting GEOMETRY_OUTPUT = none
+  writeSpectrum(&spectrum);     // avoided setting SPECTRUM_OUTPUT = none
+  // writeFlux(FLUX_DOT_OUT);   // we don't want "flux.out"
 
   for (nact = 0;  nact < atmos.Nactiveatom;  nact++) {
     atom = atmos.activeatoms[nact];
 
-    writeAtom(atom);
-    writePopulations(atom);
+    // writeAtom(atom);         // we don't want "atom.%s.out"
+    writePopulations(atom);     // we save populations in memory
     writeRadRate(atom);
     writeCollisionRate(atom);
     writeDamping(atom);
@@ -185,7 +192,7 @@ int rhf1d( int argc, char *argv[],
 
   getCPU(1, TIME_POLL, "Write output");
 
-  /* --- 06/06/19 epm: Save the populations in the array argument. -------- */
+  /* --- 06/06/19 epm: Save the populations in the array argument --- */
 
   *nspace = atmos.Nspace;
   *nlevel = atom->Nlevel;

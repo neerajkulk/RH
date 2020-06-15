@@ -5,7 +5,7 @@
        Last modified: Fri Dec  6 09:35:11 2019 --
 
        Modifications by Chris Osborne (CMO), Glasgow University,
-        to prevent interpolation problems at ACTIVE Bound-free edges.
+       to prevent interpolation problems at ACTIVE Bound-free edges.
 
        --------------------------                      ----------RH-- */
 
@@ -121,8 +121,10 @@ void SortLambda()
 
   if (atmos.Nactiveatom > 0)
   {
-    atmos.activeatoms = (Atom **)malloc(atmos.Nactiveatom *
-                                        sizeof(Atom *));
+    // 04/04/20 epm: Allocate memory only once.
+    if (atmos.activeatoms == NULL)
+      atmos.activeatoms = (Atom **) malloc(atmos.Nactiveatom *
+                                           sizeof(Atom *));
     for (n = 0; n < atmos.Natom; n++)
     {
       atom = &atmos.atoms[n];
@@ -238,15 +240,17 @@ void SortLambda()
       spectrum.Nspect++;
     }
   }
-  sprintf(messageStr, "\n %s: Found %d unique wavelengths\n",
+  sprintf(messageStr, " %s: Found %d unique wavelengths\n",
           routineName, spectrum.Nspect);
   Error(MESSAGE, routineName, messageStr);
   if (spectrum.Nspect < Nspectrum)
   {
-    sprintf(messageStr, " %s: Eliminated %d duplicate wavelengths\n\n",
+    sprintf(messageStr, " %s: Eliminated %d duplicate wavelengths\n",
             routineName, Nspectrum - spectrum.Nspect);
     Error(MESSAGE, routineName, messageStr);
   }
+  Error(MESSAGE, routineName, "\n");
+
   /* --- Allocate space for wavelength array and active sets -- ----- */
 
   spectrum.lambda = (double *)realloc(spectrum.lambda,
@@ -350,8 +354,8 @@ void SortLambda()
         if (as->Nactiveatomrt[nact] == N_MAX_OVERLAP)
         {
           sprintf(messageStr,
-                  "\n Too many overlapping transitions (> %d) "
-                  "for atom %s and nspect = %d\n",
+                  "Too many overlapping transitions (> %d) "
+                  "for atom %s and nspect = %d",
                   as->Nactiveatomrt[nact], atom->ID, nspect);
           Error(ERROR_LEVEL_2, routineName, messageStr);
         }
@@ -431,8 +435,8 @@ void SortLambda()
         if (as->Nactiveatomrt[nact] == N_MAX_OVERLAP)
         {
           sprintf(messageStr,
-                  "\n Too many overlapping transitions (> %d) "
-                  "for atom %s and nspect = %d\n",
+                  "Too many overlapping transitions (> %d) "
+                  "for atom %s and nspect = %d",
                   as->Nactiveatomrt[nact], atom->ID, nspect);
           Error(ERROR_LEVEL_2, routineName, messageStr);
         }
@@ -484,8 +488,8 @@ void SortLambda()
         if (as->Nactivemolrt[nact] == N_MAX_OVERLAP)
         {
           sprintf(messageStr,
-                  "\n Too many overlapping transitions (> %d) "
-                  "for molecule %s and nspect = %d\n",
+                  "Too many overlapping transitions (> %d) "
+                  "for molecule %s and nspect = %d",
                   as->Nactivemolrt[nact], molecule->ID, nspect);
           Error(ERROR_LEVEL_2, routineName, messageStr);
         }
