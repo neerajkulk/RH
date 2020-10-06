@@ -1,0 +1,33 @@
+# <<One-line atomic model description>>
+  SR
+
+# Nlevel  Nline   Ncont   Nfixed
+   3       1       2        0
+
+#   E[cm^-1]    g           label[20]         stage   levelNo
+#                     '|----|----|----|----'
+      0.000    1.00   'SR I 4P6 5S2 1SE 0  '    0       0
+  21698.482    3.00   'SR I 4P6 5S5P 1PO 1 '    0       1
+  45932.090    2.00   'SR II 4P6 5S2 2SE 1 '    1       2
+
+# j   i       f     type  Nlambda symmetr  qcore  qwing  vdWapprx          vdWaals            radiative  Stark
+#                                                                        H            He
+#  lambda =    460.7327[nm]
+  1  0  1.92e+00    VOIGT   100     ASYMM    2.0   7.0   BARKLEM   1.00   0.00   1.00   0.00   2.01E+08  0.00E+00
+
+# j   i  alpha [m^-2]   Nlambda     Wavel. Dep.   lamb_min [nm]
+
+##  'SR I 4P6 5S2 1SE 0
+  2   0   1.00E-21       30        HYDROGENIC         50.0
+#   SR I 4P6 5S5P 1PO 1
+  2   1   1.14E-23       30        HYDROGENIC         110.0
+  
+# Collisional rate coefficients from impact.c
+
+ TEMP   13          1264.9     2249.4     4000.0     7113.1    12649.1    22493.6    40000.0    71131.1   126491.0   224936.0   400000.0   711312.0  1264910.0
+
+ CE      1  0    1.200E-13  6.916E-14  4.057E-14  2.449E-14  1.544E-14  1.030E-14  7.317E-15  5.476E-15  4.172E-15  3.081E-15  2.213E-15  1.494E-15  1.006E-15   (Seaton IP)
+ CI      2  0    2.345E-16  2.345E-16  2.345E-16  2.345E-16  2.345E-16  2.345E-16  2.345E-16  2.345E-16  2.345E-16  2.345E-16  2.345E-16  2.345E-16  2.345E-16 
+ CI      2  1    5.068E-18  5.068E-18  5.068E-18  5.068E-18  5.068E-18  5.068E-18  5.068E-18  5.068E-18  5.068E-18  5.068E-18  5.068E-18  5.068E-18  5.068E-18 
+
+ END
